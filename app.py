@@ -19,11 +19,16 @@ def home():
 # predict route
 @app.route('/predict', methods=['POST'])
 def predict():
-    news_text = request.form['news']
+    # Use .get() for safer access to form data and add validation
+    news_text = request.form.get('news')
+    if not news_text or not news_text.strip():
+        return jsonify({'error': 'No news text provided or text is empty'}), 400
+
     news_vector = vectorizer.transform([news_text])
     prediction = model.predict(news_vector)
     sentiment_map = {2: 'positive', 1: 'negative', 0: 'neutral'}
-    sentiment = sentiment_map[prediction[0]]
+    # Use .get() for safer dictionary access in case of an unexpected prediction
+    sentiment = sentiment_map.get(prediction[0], 'unknown')
     return jsonify({'news': news_text, 'sentiment': sentiment})
 
 # run the app
