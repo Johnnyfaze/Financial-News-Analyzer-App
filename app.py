@@ -1,14 +1,19 @@
 # create flask app
 from flask import Flask, request, jsonify, render_template
 import joblib
-from sklearn.feature_extraction.text import TfidfVectorizer
+import os
 
 # create the app
 app = Flask(__name__)
 
+# Get the absolute path to the directory where this script is located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, 'sentiment_model.pkl')
+VECTORIZER_PATH = os.path.join(BASE_DIR, 'vectorizer.pkl')
+
 # load the model and vectorizer
-model = joblib.load('sentiment_model.pkl')
-vectorizer = joblib.load('vectorizer.pkl')
+model = joblib.load(MODEL_PATH)
+vectorizer = joblib.load(VECTORIZER_PATH)
 
 # define routes
 @app.route('/')
