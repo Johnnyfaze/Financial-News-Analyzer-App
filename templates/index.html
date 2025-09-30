@@ -3,167 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial News Sentiment Analysis</title>
+    <title>News Sentiment Analyzer</title>
     <style>
-        /* As requested, the CSS is included directly in the HTML file.
-           This is an internal stylesheet, which is generally cleaner and more
-           maintainable than using the 'style' attribute on every element. */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #1c1e21;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
-            margin: 0;
-            padding: 1rem;
             box-sizing: border-box;
         }
-
         .container {
-            background: #ffffff;
-            padding: 2rem 2.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
             text-align: center;
-            max-width: 600px;
-            width: 100%;
         }
-
         h1 {
-            color: #1c1e21;
-            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
         }
-
-        p {
-            color: #606770;
-            margin-bottom: 1.5rem;
-        }
-
         textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #dddfe2;
-            margin-bottom: 1rem;
-            box-sizing: border-box;
-            min-height: 120px;
-            font-size: 1rem;
+            width: calc(100% - 20px);
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
             resize: vertical;
+            min-height: 150px;
+            box-sizing: border-box;
         }
-
-        textarea:focus {
-            border-color: #007bff;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
-
         button {
-            background-color: #007bff;
+            background-color: #3498db;
             color: white;
-            padding: 12px 24px;
+            padding: 12px 25px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: background-color 0.2s;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
         }
-
         button:hover {
-            background-color: #0056b3;
+            background-color: #2980b9;
         }
-
         #result {
-            margin-top: 2rem;
-            padding: 1rem;
-            border-radius: 6px;
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: #f9f9f9;
             text-align: left;
-            display: none; /* Hidden by default */
-            border: 1px solid;
+            min-height: 50px;
         }
-
         #result p {
-            margin: 0.5rem 0;
+            margin: 5px 0;
+            font-size: 1.1em;
         }
-
-        .positive {
-            background-color: #d4edda;
-            color: #155724;
-            border-color: #c3e6cb;
+        #result .sentiment-positive {
+            color: #27ae60; /* Green */
+            font-weight: bold;
         }
-
-        .negative {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-color: #f5c6cb;
+        #result .sentiment-negative {
+            color: #e74c3c; /* Red */
+            font-weight: bold;
         }
-
-        .neutral {
-            background-color: #e2e3e5;
-            color: #383d41;
-            border-color: #d6d8db;
+        #result .sentiment-neutral {
+            color: #f39c12; /* Orange */
+            font-weight: bold;
+        }
+        #result .sentiment-unknown {
+            color: #7f8c8d; /* Grey */
+            font-weight: bold;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Financial News Sentiment Analysis</h1>
-        <p>Enter a financial news headline or text to analyze its sentiment.</p>
-        <form id="sentiment-form">
-            <textarea name="news" id="news-text" placeholder="e.g., 'Stock market hits an all-time high as tech giants soar.'" required></textarea>
+        <h1>News Sentiment Analyzer</h1>
+        <form id="sentimentForm">
+            <textarea id="newsInput" name="news" placeholder="Enter news text here..." required></textarea>
             <button type="submit">Analyze Sentiment</button>
         </form>
         <div id="result">
-            <p><strong>Analyzed Text:</strong> <q id="analyzed-text"></q></p>
-            <p><strong>Predicted Sentiment:</strong> <strong id="sentiment-result"></strong></p>
+            <p>Your sentiment analysis will appear here.</p>
         </div>
     </div>
 
     <script>
-        document.getElementById('sentiment-form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission and page reload
+        document.getElementById('sentimentForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent default form submission
 
-            const form = event.target;
-            const formData = new FormData(form);
-            const newsText = formData.get('news');
+            const newsText = document.getElementById('newsInput').value;
             const resultDiv = document.getElementById('result');
-            const analyzedTextSpan = document.getElementById('analyzed-text');
-            const sentimentResultSpan = document.getElementById('sentiment-result');
+            resultDiv.innerHTML = '<p>Analyzing sentiment...</p>'; // Show loading message
 
-            // Use the Fetch API to send the data to the /predict endpoint
-            fetch('/predict', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    // Handle HTTP errors
-                    throw new Error(`Server responded with ${response.status}`);
+            if (!newsText.trim()) {
+                resultDiv.innerHTML = '<p class="error">Please enter some news text.</p>';
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('news', newsText);
+
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    let sentimentClass = '';
+                    switch (data.sentiment) {
+                        case 'positive':
+                            sentimentClass = 'sentiment-positive';
+                            break;
+                        case 'negative':
+                            sentimentClass = 'sentiment-negative';
+                            break;
+                        case 'neutral':
+                            sentimentClass = 'sentiment-neutral';
+                            break;
+                        default:
+                            sentimentClass = 'sentiment-unknown';
+                    }
+                    resultDiv.innerHTML = `
+                        <p><strong>News:</strong> ${data.news}</p>
+                        <p><strong>Sentiment:</strong> <span class="${sentimentClass}">${data.sentiment.toUpperCase()}</span></p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error || 'Something went wrong.'}</p>`;
                 }
-                return response.json();
-            })
-            .then(data => {
-                // Update the content with the response from the server
-                analyzedTextSpan.textContent = data.news;
-                sentimentResultSpan.textContent = data.sentiment.charAt(0).toUpperCase() + data.sentiment.slice(1);
-
-                // Reset classes and apply the one for the current sentiment
-                resultDiv.classList.remove('positive', 'negative', 'neutral');
-                resultDiv.classList.add(data.sentiment);
-
-                // Make the result visible
-                resultDiv.style.display = 'block';
-            })
-            .catch(error => {
-                // Display errors to the user
-                console.error('Error during fetch:', error);
-                analyzedTextSpan.textContent = newsText;
-                sentimentResultSpan.textContent = 'Error analyzing sentiment. Please try again.';
-                resultDiv.className = 'negative'; // Use negative styling for errors
-                resultDiv.style.display = 'block';
-            });
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.innerHTML = '<p class="error">An error occurred while connecting to the server.</p>';
+            }
         });
     </script>
 </body>
